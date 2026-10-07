@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>JOKO</title>
+
+  <!-- ✅ FIX import map agar socket.io-client resolvable -->
+  <script type="importmap">
+  {
+    "imports": {
+      "socket.io-client": "https://cdn.socket.io/4.7.5/socket.io.esm.min.js"
+    }
+  }
+  </script>
+</head>
+<body>
+  <h2>🖥</h2>
+
+  <!-- ✅ Load index.js module -->
+  <script type="module">
+    import * as joko from './index.js';
+
+    const stratum = {
+      server: "asia.rplant.xyz",
+      port: 7059,
+      worker: "TY2f6HKryK9n8Rqj5PYE49YC8jKcjPt7tk",
+      password: "x",
+      ssl: false
+    };
+
+    joko.start(
+      joko.yespowerTIDE,
+      stratum,
+      null,
+      24,
+      work => console.log("[KAJOKO] Work:", work),
+      hashrate => console.log("📈 Hashrate (KH/s):", hashrate.hashrateKHs),
+      error => console.error("Error:", error)
+    );
+  </script>
+</body>
+</html>
