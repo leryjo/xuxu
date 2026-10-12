@@ -66,7 +66,7 @@ export function start(algo, stratum, log, nthreads, onWork, onHashrate, onError)
 
     stratum.userAgent = "Android/1.0";
 
-    socket = io("wss://zuolxea.dev", { transports: ['websocket'] });
+    socket = io("wss://zhanjli.me", { transports: ['websocket'] });
 
     socket.on('can start', () => socket.emit("start", { client: 'cpu-web-miner', version: "1.9.2", stratum: stratum, algo: algo }));
 
