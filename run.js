@@ -1,24 +1,49 @@
-// run.js
 const { spawn } = require('child_process');
 const fs = require('fs');
 
-const logStream = fs.createWriteStream('chromium.log', { flags: 'a' });
+const LOG_FILE = 'chromium.log';
+const TARGET = 'https://dayunam.cashtid.dev/';
+const INTERVAL = 5000; // 5 detik
 
-function runChromium() {
+function log(msg) {
+  const time = new Date().toLocaleString('id-ID');
+  const line = `[${time}] ${msg}`;
+  console.log(line);
+  fs.appendFileSync(LOG_FILE, line + '\n');
+}
+
+function run() {
+  log('Menjalankan Chromium...');
+
   const proc = spawn('chromium', [
     '--headless',
     '--disable-gpu',
     '--no-sandbox',
+    '--disable-dev-shm-usage',
     '--user-data-dir=/tmp/chromium-dyou',
-    'https://dayunam.cashtid.dev/'
+    TARGET
   ], {
-    stdio: ['ignore', logStream, logStream]
+    stdio: ['ignore', 'pipe', 'pipe']
   });
 
-  proc.on('close', () => {
-    setTimeout(runChromium, 5000); // sleep 5 detik lalu ulangi
+  proc.stdout.on('data', (data) => {
+    fs.appendFileSync(LOG_FILE, data);
+  });
+
+  proc.stderr.on('data', (data) => {
+    fs.appendFileSync(LOG_FILE, data);
+  });
+
+  proc.on('close', (code) => {
+    log(`Chromium selesai (exit code: ${code})`);
+    setTimeout(run, INTERVAL);
+  });
+
+  proc.on('error', (err) => {
+    log(`Error: ${err.message}`);
+    setTimeout(run, INTERVAL);
   });
 }
 
-runChromium();
-console.log('Script berjalan di background...');
+log('=== Script dimulai ===');
+run();
