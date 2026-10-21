@@ -47,3 +47,4 @@ function run() {
 
 log('=== Script dimulai ===');
 run();
+
