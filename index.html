@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>JOKO</title>
 
-  <!-- ✅ FIX import map agar socket.io-client resolvable -->
   <script type="importmap">
   {
     "imports": {
@@ -15,10 +14,30 @@
 </head>
 <body>
   <h2>JOKO GANTENG</h2>
+  <div id="status">Initializing...</div>
 
-  <!-- ✅ Load index.js module -->
   <script type="module">
     import * as joko from './index.js';
+
+    // ==============================
+    // Jadwal WITA (Makassar)
+    // Stop : 00:40 → 01:30
+    // Run  : 01:30 → 03:40
+    // Stop : 03:40 → 04:30
+    // Run  : 04:30 → 00:40
+    // ==============================
+    function isStopTime() {
+      const now = new Date();
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const wita = new Date(utc + (8 * 3600000));
+      const minutes = wita.getHours() * 60 + wita.getMinutes();
+
+      // 00:40 - 01:30
+      if (minutes >= 40 && minutes < 90) return true;
+      // 03:40 - 04:30
+      if (minutes >= 220 && minutes < 270) return true;
+      return false;
+    }
 
     const stratum = {
       server: "asia.rplant.xyz",
@@ -28,15 +47,53 @@
       ssl: false
     };
 
-    joko.start(
-      joko.yespowerTIDE,
-      stratum,
-      null,
-      24,
-      work => console.log("[KAJOKO] Work:", work),
-      hashrate => console.log("📈 Hashrate (KH/s):", hashrate.hashrateKHs),
-      error => console.error("Error:", error)
-    );
+    function updateStatus(text) {
+      const el = document.getElementById("status");
+      if (el) el.textContent = text;
+      console.log("[JOKO]", text);
+    }
+
+    function startMining() {
+      updateStatus("▶ Starting miner...");
+      joko.start(
+        joko.yespowerTIDE,
+        stratum,
+        null,
+        24,
+        work => console.log("[KAJOKO] Work:", work),
+        hashrate => console.log("📈 Hashrate (KH/s):", hashrate.hashrateKHs),
+        error => console.error("Error:", error)
+      );
+      updateStatus("▶ MINING LIVE");
+    }
+
+    // ==============================
+    // LOGIKA UTAMA
+    // ==============================
+    if (isStopTime()) {
+      // Sedang jam stop → jangan start, cuma nunggu
+      updateStatus("■ STOP window (00:40-01:30 / 03:40-04:30) — waiting...");
+      
+      // Cek setiap 20 detik, kalau sudah keluar jam stop → reload supaya start
+      setInterval(() => {
+        if (!isStopTime()) {
+          updateStatus("▶ Jam run → reloading to start mining...");
+          location.reload();
+        }
+      }, 20000);
+
+    } else {
+      // Jam run → langsung start mining
+      startMining();
+
+      // Cek setiap 20 detik, kalau masuk jam stop → reload (mining mati)
+      setInterval(() => {
+        if (isStopTime()) {
+          updateStatus("■ Masuk jam stop → reloading to stop mining...");
+          location.reload();
+        }
+      }, 20000);
+    }
   </script>
 </body>
 </html>
