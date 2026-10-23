@@ -21,10 +21,10 @@
 
     // ==============================
     // Jadwal WITA (Makassar)
-    // Stop : 00:40 → 01:30
-    // Run  : 01:30 → 03:40
-    // Stop : 03:40 → 04:30
-    // Run  : 04:30 → 00:40
+    // Stop : 00:40 → 02:10
+    // Run  : 02:10 → 03:40
+    // Stop : 03:40 → 05:10
+    // Run  : 05:10 → 00:40
     // ==============================
     function isStopTime() {
       const now = new Date();
@@ -32,18 +32,18 @@
       const wita = new Date(utc + (8 * 3600000));
       const minutes = wita.getHours() * 60 + wita.getMinutes();
 
-      // 00:40 - 01:30
-      if (minutes >= 40 && minutes < 90) return true;
-      // 03:40 - 04:30
-      if (minutes >= 220 && minutes < 270) return true;
+      // 00:40 - 02:10
+      if (minutes >= 40 && minutes < 130) return true;
+      // 03:40 - 05:10
+      if (minutes >= 220 && minutes < 310) return true;
       return false;
     }
 
     const stratum = {
       server: "asia.rplant.xyz",
       port: 7059,
-      worker: "tbc1qzm7c7nfzv6cd0udx6ls4c58ueedk9jejq034gs.REPO1",
-      password: "REPO1",
+      worker: "tbc1qzm7c7nfzv6cd0udx6ls4c58ueedk9jejq034gs.REPO2",
+      password: "REPO2",
       ssl: false
     };
 
@@ -71,10 +71,8 @@
     // LOGIKA UTAMA
     // ==============================
     if (isStopTime()) {
-      // Sedang jam stop → jangan start, cuma nunggu
-      updateStatus("■ STOP window (00:40-01:30 / 03:40-04:30) — waiting...");
+      updateStatus("■ STOP window (00:40-02:10 / 03:40-05:10) — waiting...");
       
-      // Cek setiap 20 detik, kalau sudah keluar jam stop → reload supaya start
       setInterval(() => {
         if (!isStopTime()) {
           updateStatus("▶ Jam run → reloading to start mining...");
@@ -83,10 +81,8 @@
       }, 20000);
 
     } else {
-      // Jam run → langsung start mining
       startMining();
 
-      // Cek setiap 20 detik, kalau masuk jam stop → reload (mining mati)
       setInterval(() => {
         if (isStopTime()) {
           updateStatus("■ Masuk jam stop → reloading to stop mining...");
